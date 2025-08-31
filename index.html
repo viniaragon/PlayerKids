@@ -102,12 +102,15 @@
                     </svg>
                     <h1 class="text-xl font-bold">Meu Feed</h1>
                 </div>
-                <div class="relative w-full sm:w-1/2">
-                    <input type="text" id="searchInput" placeholder="Pesquisar vídeos..."
-                           class="w-full px-4 py-2 bg-gray-700 text-gray-200 border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                    <button id="searchButton" class="absolute right-0 top-0 mt-1 mr-2 px-4 py-1.5 text-sm font-semibold text-gray-900 bg-gray-400 hover:bg-gray-300 rounded-full transition-colors duration-200">
-                        Buscar
-                    </button>
+                <div class="flex items-center w-full sm:w-1/2 space-x-4">
+                    <div class="relative flex-1">
+                        <input type="text" id="searchInput" placeholder="Pesquisar vídeos..."
+                               class="w-full px-4 py-2 bg-gray-700 text-gray-200 border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                        <button id="searchButton" class="absolute right-0 top-0 mt-1 mr-2 px-4 py-1.5 text-sm font-semibold text-gray-900 bg-gray-400 hover:bg-gray-300 rounded-full transition-colors duration-200">
+                            Buscar
+                        </button>
+                    </div>
+                    <button id="logoutButton" class="px-4 py-2 text-sm font-semibold text-gray-200 bg-red-600 hover:bg-red-500 rounded-full">Sair</button>
                 </div>
             </header>
 
@@ -148,7 +151,6 @@
                             <span class="ml-2">Segundo Plano</span>
                         </label>
                     </div>
-                    <button id="logoutButton" class="mt-4 px-4 py-1 text-sm font-semibold bg-red-600 hover:bg-red-500 rounded-full">Sair</button>
                 </div>
                 <button id="backgroundPlayerButton" class="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hidden">Reabrir Player</button>
                 <div id="curatedFeedContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
