@@ -148,6 +148,7 @@
                             <span class="ml-2">Segundo Plano</span>
                         </label>
                     </div>
+                    <button id="logoutButton" class="mt-4 px-4 py-1 text-sm font-semibold bg-red-600 hover:bg-red-500 rounded-full">Sair</button>
                 </div>
                 <button id="backgroundPlayerButton" class="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hidden">Reabrir Player</button>
                 <div id="curatedFeedContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -161,7 +162,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         // Variáveis para armazenar o estado global
         let curatedFeed = [];
@@ -217,6 +218,7 @@
             const autoplayToggle = document.getElementById('autoplayToggle');
             const backgroundToggle = document.getElementById('backgroundToggle');
             const backgroundPlayerButton = document.getElementById('backgroundPlayerButton');
+            const logoutButton = document.getElementById('logoutButton');
 
 
             const searchInput = document.getElementById('searchInput');
@@ -243,6 +245,9 @@
                         closeVideoModal(true);
                     }
                 }
+                if (userId) {
+                    set(profileRef(), profileSelect.value);
+                }
             });
 
             autoplayToggle.addEventListener('change', () => {
@@ -263,6 +268,14 @@
                 videoModal.classList.remove('hidden');
                 videoModal.classList.add('flex');
                 backgroundPlayerButton.classList.add('hidden');
+            });
+
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                } catch (error) {
+                    showModal("Erro ao Sair", `Falha ao sair: ${error.message}`);
+                }
             });
 
             // --- Firebase Setup ---
@@ -303,13 +316,20 @@
                 }
             });
 
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
                     userEmailDisplay.textContent = user.email;
-                    profileSelect.value = 'kid';
-                    isAdult = false;
-                    adultOptions.classList.add('hidden');
+                    try {
+                        const snapshot = await get(profileRef());
+                        const profile = snapshot.val() || 'kid';
+                        profileSelect.value = profile;
+                        isAdult = profile === 'adult';
+                    } catch (error) {
+                        profileSelect.value = 'kid';
+                        isAdult = false;
+                    }
+                    adultOptions.classList.toggle('hidden', !isAdult);
                     autoplayEnabled = false;
                     backgroundPlaybackEnabled = false;
                     autoplayToggle.checked = false;
@@ -319,13 +339,24 @@
                     mainApp.classList.remove('hidden');
                     listenToCuratedFeed();
                 } else {
+                    userId = null;
+                    userEmailDisplay.textContent = '';
+                    profileSelect.value = 'kid';
+                    isAdult = false;
+                    adultOptions.classList.add('hidden');
+                    autoplayEnabled = false;
+                    backgroundPlaybackEnabled = false;
+                    autoplayToggle.checked = false;
+                    backgroundToggle.checked = false;
+                    curatedFeed = [];
+                    renderCuratedFeed();
                     // Se o usuário não estiver logado, mostra a tela de autenticação
                     mainApp.classList.add('hidden');
                     authScreen.classList.remove('hidden');
                 }
             });
-            
             // --- Realtime Database Functions ---
+            const profileRef = () => ref(db, `/artifacts/${appId}/users/${userId}/profile`);
             const curatedFeedRef = () => ref(db, `/artifacts/${appId}/users/${userId}/curated_feed/feed_doc`);
 
             const listenToCuratedFeed = () => {
